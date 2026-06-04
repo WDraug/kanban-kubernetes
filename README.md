@@ -6,7 +6,7 @@ Une application Kanban simple et épurée déployée sur Kubernetes avec une arc
 ![Kubernetes](https://img.shields.io/badge/kubernetes-1.20+-blue)
 ![Node](https://img.shields.io/badge/node-18%2B-green)
 
-## 🎯 Fonctionnalités
+## Fonctionnalités
 
 - **Interface Kanban moderne** : Design épuré avec dégradé violet/bleu
 - **3 colonnes** : À Faire, En Cours, Terminé
@@ -18,7 +18,7 @@ Une application Kanban simple et épurée déployée sur Kubernetes avec une arc
 - **Design responsive** : Fonctionne sur mobile et desktop
 - **Temps réel** : Mise à jour instantanée des tâches
 
-## 🏗️ Architecture Microservices
+## Architecture Microservices
 
 L'application est composée de 4 services :
 
@@ -53,7 +53,7 @@ L'application est composée de 4 services :
 - Port : 27017
 - Rôle : Persistance des données
 
-## 🚀 Déploiement
+## Déploiement
 
 ### Prérequis
 
@@ -138,7 +138,7 @@ cd web-service
 docker build -t antoninraskopf/web-service:v1 .
 ```
 
-## 📁 Structure du Projet
+## Structure du Projet
 
 ```
 kanban-kubernetes-main/
@@ -164,7 +164,7 @@ kanban-kubernetes-main/
     └── web-deployment.yaml
 ```
 
-## 🎨 Technologies Utilisées
+## Technologies Utilisées
 
 - **Frontend** : HTML5, CSS3, JavaScript (vanilla)
 - **Backend** : Node.js, Express.js
@@ -173,16 +173,16 @@ kanban-kubernetes-main/
 - **Orchestration** : Kubernetes
 - **Ingress** : nginx ingress controller
 
-## ✨ Auteurs
+## Auteurs
 
 **Projet réalisé par Antonin Raskopf & Louis Masson**
 
 Application Kanban avec architecture microservices déployée sur Kubernetes.
 
-## 📝 Licence
+## Licence
 
 ISC
 
 ---
 
-**Enjoy your Kanban Board! 🎉**
+**Enjoy your Kanban Board!**
