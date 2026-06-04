@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board - Antonin Raskopf & Louis Masson</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 30px 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .authors {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .column {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .column-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .task-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .todo .column-title { color: #e74c3c; }
+        .in-progress .column-title { color: #f39c12; }
+        .done .column-title { color: #27ae60; }
+
+        .task-list {
+            min-height: 300px;
+        }
+
+        .task {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .task-title {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .task-status {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .add-task-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .add-task-form input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .add-task-form input:focus {
+            border-color: #667eea;
+        }
+
+        .add-task-form button {
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .add-task-form button:hover {
+            background: #5568d3;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 50px;
+        }
+
+        .error {
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .kanban-board {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KANBAN BOARD</h1>
+            <p class="authors">Par Antonin Raskopf & Louis Masson</p>
+        </header>
+
+        <div id="error-container"></div>
+
+        <div class="controls">
+            <button onclick="loadTasks()">🔄 Rafraîchir</button>
+            <button onclick="showAddForm()">➕ Ajouter une tâche</button>
+        </div>
+
+        <div class="add-task-form" id="add-task-form" style="display: none;">
+            <input type="text" id="new-task-title" placeholder="Titre de la tâche..." />
+            <select id="new-task-status">
+                <option value="À faire">À faire</option>
+                <option value="En cours">En cours</option>
+                <option value="Terminé">Terminé</option>
+            </select>
+            <button onclick="addTask()">Ajouter</button>
+        </div>
+
+        <div class="loading" id="loading">Chargement des tâches...</div>
+
+        <div class="kanban-board" id="kanban-board" style="display: none;">
+            <div class="column todo">
+                <div class="column-header">
+                    <span class="column-title">À Faire</span>
+                    <span class="task-count" id="todo-count">0</span>
+                </div>
+                <div class="task-list" id="todo-tasks"></div>
+            </div>
+
+            <div class="column in-progress">
+                <div class="column-header">
+                    <span class="column-title">En Cours</span>
+                    <span class="task-count" id="in-progress-count">0</span>
+                </div>
+                <div class="task-list" id="in-progress-tasks"></div>
+            </div>
+
+            <div class="column done">
+                <div class="column-header">
+                    <span class="column-title">Terminé</span>
+                    <span class="task-count" id="done-count">0</span>
+                </div>
+                <div class="task-list" id="done-tasks"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'http://kanban.local';
+
+        let tasks = [];
+
+        async function loadTasks() {
+            try {
+                const response = await fetch(`${API_URL}/`);
+                tasks = await response.json();
+                displayTasks();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('kanban-board').style.display = 'grid';
+            } catch (error) {
+                showError('Impossible de charger les tâches. Vérifiez que le backend est démarré.');
+                console.error('Erreur:', error);
+            }
+        }
+
+        function displayTasks() {
+            const todoTasks = tasks.filter(t => t.status === 'À faire' || t.status === 'À faire');
+            const inProgressTasks = tasks.filter(t => t.status === 'En cours');
+            const doneTasks = tasks.filter(t => t.status === 'Terminé');
+
+            document.getElementById('todo-tasks').innerHTML = todoTasks.length ?
+                todoTasks.map(task => createTaskCard(task)).join('') :
+                '<div class="empty-state">Aucune tâche</div>';
+
+            document.getElementById('in-progress-tasks').innerHTML = inProgressTasks.length ?
+                inProgressTasks.map(task => createTaskCard(task)).join('') :
+                '<div class="empty-state">Aucune tâche</div>';
+
+            document.getElementById('done-tasks').innerHTML = doneTasks.length ?
+                doneTasks.map(task => createTaskCard(task)).join('') :
+                '<div class="empty-state">Aucune tâche</div>';
+
+            document.getElementById('todo-count').textContent = todoTasks.length;
+            document.getElementById('in-progress-count').textContent = inProgressTasks.length;
+            document.getElementById('done-count').textContent = doneTasks.length;
+        }
+
+        function createTaskCard(task) {
+            return `
+                <div class="task" onclick="cycleStatus('${task._id}')">
+                    <div class="task-title">${escapeHtml(task.title)}</div>
+                    <div class="task-status">${task.status}</div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showAddForm() {
+            const form = document.getElementById('add-task-form');
+            form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        async function addTask() {
+            const title = document.getElementById('new-task-title').value.trim();
+            const status = document.getElementById('new-task-status').value;
+
+            if (!title) {
+                showError('Veuillez entrer un titre pour la tâche');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/add-task`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, status })
+                });
+
+                if (response.ok) {
+                    document.getElementById('new-task-title').value = '';
+                    loadTasks();
+                } else {
+                    showError('Erreur lors de l\'ajout de la tâche');
+                }
+            } catch (error) {
+                showError('Impossible de contacter le serveur');
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function cycleStatus(taskId) {
+            const task = tasks.find(t => t._id === taskId);
+            if (!task) return;
+
+            const statusCycle = {
+                'À faire': 'En cours',
+                'En cours': 'Terminé',
+                'Terminé': 'À faire'
+            };
+
+            const newStatus = statusCycle[task.status];
+
+            try {
+                const response = await fetch(`${API_URL}/update-task`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: taskId, status: newStatus })
+                });
+
+                if (response.ok) {
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('error-container');
+            container.innerHTML = `<div class="error">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+
+        // Charger les tâches au démarrage
+        loadTasks();
+    </script>
+</body>
+</html>
