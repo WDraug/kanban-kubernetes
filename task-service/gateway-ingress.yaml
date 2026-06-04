@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kanban-gateway
+  annotations:
+    # Cette ligne permet de réécrire l'URL si besoin, très utile pour les API
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: kanban.local # C'est le nom de domaine local que nous allons utiliser
+      http:
+        paths:
+          - path: /tasks
+            pathType: Prefix
+            backend:
+              service:
+                name: task-service # Doit correspondre au nom du service K8s de l'étape 1
+                port:
+                  number: 80 # Le port exposé par ton service K8s
